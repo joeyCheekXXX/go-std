@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -204,10 +203,4 @@ func ClearTimeoutConnections() {
 			_ = client.close
 		}
 	}
-}
-
-// AllSendMessages 全员广播
-func AllSendMessages(Symbol string, ID int64, data string) {
-	fmt.Println("全员广播", Symbol, ID, data)
-	Manager.sendAll([]byte(data))
 }
