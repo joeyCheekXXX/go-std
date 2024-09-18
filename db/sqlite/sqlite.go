@@ -2,7 +2,7 @@ package sqlite
 
 import (
 	"github.com/glebarez/sqlite"
-	"go-std/db/config"
+	"github.com/joeyCheek888/go-std.git/db/config"
 	"gorm.io/gorm"
 	"path/filepath"
 )

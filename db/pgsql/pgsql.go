@@ -1,7 +1,7 @@
 package pgsql
 
 import (
-	"go-std/db/config"
+	"github.com/joeyCheek888/go-std.git/db/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

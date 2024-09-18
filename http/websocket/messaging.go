@@ -3,7 +3,7 @@ package websocket
 import (
 	"fmt"
 	"github.com/goccy/go-json"
-	"go-std/http/websocket/types"
+	"github.com/joeyCheek888/go-std.git/http/websocket/types"
 	"time"
 )
 

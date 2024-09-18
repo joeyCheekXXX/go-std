@@ -3,7 +3,7 @@ package websocket
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"go-std/snowflake"
+	"github.com/joeyCheek888/go-std.git/snowflake"
 	"runtime/debug"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/apache/rocketmq-client-go/v2/admin"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
-	"go-std/log"
+	"github.com/joeyCheek888/go-std.git/log"
 	"go.uber.org/zap"
 )
 

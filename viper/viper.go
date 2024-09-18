@@ -10,8 +10,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
-	"go-std/global"
-	_ "go-std/packfile"
+	"github.com/joeyCheek888/go-std.git/global"
+	_ "github.com/joeyCheek888/go-std.git/packfile"
 )
 
 // Viper //

@@ -3,8 +3,8 @@ package http
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-std/http/websocket"
-	"go-std/log"
+	"github.com/joeyCheek888/go-std.git/http/websocket"
+	"github.com/joeyCheek888/go-std.git/log"
 	"go.uber.org/zap"
 	"net/http"
 )

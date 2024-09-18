@@ -1,8 +1,8 @@
 package groupx
 
 import (
+	"github.com/joeyCheek888/go-std.git/log"
 	"github.com/zeromicro/go-zero/core/service"
-	"go-std/log"
 )
 
 type Service service.Service
