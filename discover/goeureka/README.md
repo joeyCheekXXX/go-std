@@ -34,7 +34,7 @@ opt := make(map[string]string)
 opt["username"] = "admin"
 opt["password"] = "admin123"
 // 加载配置
-goeureka.RegisterClient("http://127.0.0.1:8028","",
+goeureka.RegisterClient("httpx://127.0.0.1:8028","",
     "golang-server-test", strconv.Itoa(8888),
     strconv.Itoa(43), opt)
 ```
@@ -45,7 +45,7 @@ goeureka.RegisterClient("http://127.0.0.1:8028","",
 或者
 
 ```go
-goeureka.RegisterClient("http://127.0.0.1:8761","","my-goserver", "8000", "43",nil)
+goeureka.RegisterClient("httpx://127.0.0.1:8761","","my-goserver", "8000", "43",nil)
 ```
 
 > **Notes：**
@@ -60,14 +60,14 @@ goeureka.RegisterClient("http://127.0.0.1:8761","","my-goserver", "8000", "43",n
 import (
 	"fmt"
 	"github.com/SimonWang00/goeureka"
-	"net/http"
+	"net/httpx"
 )
 
 func main()  {
     opt := make(map[string]string)
     opt["username"] = "admin"
     opt["password"] = "admin123"
-	goeureka.RegisterClient("http://127.0.0.1:8761","","myapp", "8000", "43",opt)
+	goeureka.RegisterClient("httpx://127.0.0.1:8761","","myapp", "8000", "43",opt)
 	http.HandleFunc("/hello", func(responseWriter http.ResponseWriter, request *http.Request) {
 		resp := "hello goeureka!"
 		_, _ = responseWriter.Write([]byte(resp))
@@ -95,7 +95,7 @@ func main()  {
     opt := make(map[string]string)
     opt["username"] = "admin"
     opt["password"] = "admin123"
-    goeureka.RegisterClient("http://127.0.0.1:8761","","myapp", "8000", "43",opt)
+    goeureka.RegisterClient("httpx://127.0.0.1:8761","","myapp", "8000", "43",opt)
     r.Run("127.0.0.1:8000")
 }
 ```
