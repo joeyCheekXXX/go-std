@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joeyCheek888/go-std/httpx/websocket"
 	"github.com/joeyCheek888/go-std/log"
-	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -44,7 +43,7 @@ func (s *Server) Start() {
 
 	address := fmt.Sprintf("%s:%s", _config.Addr, _config.Port)
 
-	log.Logger.Info("启动HTTP服务", zap.String("地址", address))
+	log.Logger.Info("启动HTTP服务", log.String("地址", address))
 
 	s.Server.Addr = address
 	s.Server.Handler = s.Router

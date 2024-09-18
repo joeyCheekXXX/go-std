@@ -3,7 +3,6 @@ package websocket
 import (
 	"github.com/gorilla/websocket"
 	"github.com/joeyCheek888/go-std/log"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
@@ -20,10 +19,10 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 		Error:            nil,
 		CheckOrigin: func(r *http.Request) bool {
 			log.Logger.Info("升级协议",
-				zap.String("url", req.URL.String()),
-				zap.String("host", req.Host),
-				zap.Any("ua", r.Header["User-Agent"]),
-				zap.Any("referer", r.Header["Referer"]))
+				log.String("url", req.URL.String()),
+				log.String("host", req.Host),
+				log.Any("ua", r.Header["User-Agent"]),
+				log.Any("referer", r.Header["Referer"]))
 			return true
 		},
 		EnableCompression: false,
@@ -38,7 +37,7 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 		http.NotFound(w, req)
 		return
 	}
-	log.Logger.Info("webSocket 建立连接:", zap.String("addr", conn.RemoteAddr().String()))
+	log.Logger.Info("webSocket 建立连接:", log.String("addr", conn.RemoteAddr().String()))
 	currentTime := time.Now().Unix()
 	c := NewClient(conn.RemoteAddr().String(), token, conn, currentTime)
 	go c.Read()
@@ -51,7 +50,7 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 type registerCallbackFun func(client *Client)
 
 var registerCallback = func(client *Client) {
-	log.Logger.Info("用户连接", zap.String("addr", client.Addr))
+	log.Logger.Info("用户连接", log.String("addr", client.Addr))
 }
 
 func SetRegisterCallback(callback registerCallbackFun) {
@@ -63,8 +62,8 @@ type heartbeatCallbackFun func(client *Client)
 var heartbeatCallback = func(client *Client) {
 	log.Logger.Info(
 		"心跳",
-		zap.String("addr", client.Addr),
-		zap.String("时间", time.Unix(client.HeartbeatTime, 0).Format(time.DateTime)),
+		log.String("addr", client.Addr),
+		log.String("时间", time.Unix(client.HeartbeatTime, 0).Format(time.DateTime)),
 	)
 }
 
@@ -77,9 +76,9 @@ type processMessageCallbackFun func(client *Client, cmd string, data any)
 var processMessageCallback = func(client *Client, cmd string, data any) {
 	log.Logger.Info(
 		"收到消息",
-		zap.String("addr", client.Addr),
-		zap.Any("clientID", client.ClientID),
-		zap.String("cmd", cmd), zap.Any("data", data),
+		log.String("addr", client.Addr),
+		log.Any("clientID", client.ClientID),
+		log.String("cmd", cmd), log.Any("data", data),
 	)
 }
 
@@ -90,7 +89,7 @@ func SetProcessMessageCallback(callback processMessageCallbackFun) {
 type CloseConnCallback func(client *Client)
 
 var closeConnCallback = func(client *Client) {
-	log.Logger.Info("关闭连接", zap.String("addr", client.Addr))
+	log.Logger.Info("关闭连接", log.String("addr", client.Addr))
 }
 
 func SetCloseConnCallback(callback CloseConnCallback) {

@@ -121,42 +121,6 @@ func (manager *manager) GetUsersLen() (userLen int) {
 	return
 }
 
-//// AddUsers 添加用户
-//func (manager *manager) AddUsers(id int64, client *Client) {
-//	manager.UserLock.Lock()
-//	defer manager.UserLock.Unlock()
-//	manager.Users[id] = client
-//}
-
-//// DelUsers 删除用户
-//func (manager *manager) DelUsers(client *Client) (result bool) {
-//	manager.UserLock.Lock()
-//	defer manager.UserLock.Unlock()
-//	if value, ok := manager.Users[client.ClientID]; ok {
-//		// 判断是否为相同的用户
-//		if value.Addr != client.Addr {
-//			return
-//		}
-//		delete(manager.Users, client.ClientID)
-//		result = true
-//	}
-//	return
-//}
-
-//// GetUserList 获取用户 list
-//func (manager *manager) GetUserList(Symbol string) (userList []int64) {
-//	userList = make([]string, 0)
-//	manager.UserLock.RLock()
-//	defer manager.UserLock.RUnlock()
-//	for _, v := range manager.Users {
-//		if v.Symbol == Symbol {
-//			userList = append(userList, v.ClientID)
-//		}
-//	}
-//	fmt.Println("GetUserList len:", len(manager.Users))
-//	return
-//}
-
 // GetUserClients 获取用户的key
 func (manager *manager) GetUserClients() (clients []*Client) {
 	clients = make([]*Client, 0)
@@ -183,9 +147,6 @@ func (manager *manager) Start() {
 		case conn := <-manager.Register:
 			// 建立连接事件
 			manager.EventRegister(conn)
-		//case l := <-manager.Login:
-		//	// 用户登录
-		//	manager.EventLogin(l)
 		case conn := <-manager.Unregister:
 			// 断开连接事件
 			manager.EventUnregister(conn)
@@ -217,9 +178,9 @@ func GetManagerInfo(isDebug string) (managerInfo map[string]interface{}) {
 			addrList = append(addrList, client.Addr)
 			return true
 		})
-		//users := Manager.GetUserKeys()
+		// users := Manager.GetUserKeys()
 		managerInfo["clients"] = addrList // 客户端列表
-		//managerInfo["users"] = users      // 登录用户列表
+		// managerInfo["users"] = users      // 登录用户列表
 	}
 	return
 }
