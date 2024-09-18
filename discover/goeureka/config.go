@@ -4,10 +4,10 @@ import (
 	"strings"
 )
 
-// File  : config.go
-// Author: Simon
-// Describe: the config for eureka client
-// Date  : 2020/12/7
+//File  : config.go
+//Author: Simon
+//Describe: the config for eureka client
+//Date  : 2020/12/7
 
 // define eureka config
 var configStr = `{
@@ -27,9 +27,9 @@ var configStr = `{
       "$":${securePort},
       "@enabled": false
     },
-    "homePageUrl" : "httpx://${ipAddress}:${port}/",
-    "statusPageUrl": "httpx://${ipAddress}:${port}/info",
-    "healthCheckUrl": "httpx://${ipAddress}:${port}/health",
+    "homePageUrl" : "http://${ipAddress}:${port}/",
+    "statusPageUrl": "http://${ipAddress}:${port}/info",
+    "healthCheckUrl": "http://${ipAddress}:${port}/health",
     "dataCenterInfo" : {
       "@class":"com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
       "name": "MyOwn"

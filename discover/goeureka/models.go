@@ -1,9 +1,9 @@
 package goeureka
 
-// File  : models.go
-// Author: Simon
-// Describe: Defines all structs for eureka
-// Date  : 2020-12-03
+//File  : models.go
+//Author: Simon
+//Describe: Defines all structs for eureka
+//Date  : 2020-12-03
 
 /**
   Defines all structs for eureka
@@ -67,7 +67,7 @@ package goeureka
 		}
 */
 
-// httpx action for request
+// http action for request
 type RequestAction struct {
 	Method      string `yaml:"method"`
 	Url         string `yaml:"url"`

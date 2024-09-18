@@ -17,7 +17,7 @@ import (
 
 var Trans ut.Translator
 
-// TransInit local 通常取决于 httpx 请求头的 'Accept-Language'
+// TransInit local 通常取决于 http 请求头的 'Accept-Language'
 func TransInit(local string) (err error) {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 
