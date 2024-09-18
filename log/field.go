@@ -61,3 +61,7 @@ func Strings(key string, val []string) zap.Field {
 func Bool(key string, val bool) zap.Field {
 	return zap.Bool(key, val)
 }
+
+func Error(val error) zap.Field {
+	return zap.Error(val)
+}
