@@ -1,4 +1,4 @@
-module go-std
+module github.com/joeyCheek888/go-std
 
 go 1.22
 

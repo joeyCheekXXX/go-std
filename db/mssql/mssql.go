@@ -1,7 +1,7 @@
 package mssql
 
 import (
-	"github.com/joeyCheek888/go-std.git/db/config"
+	"github.com/joeyCheek888/go-std/db/config"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 )

@@ -3,21 +3,16 @@ package viper
 import (
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"os"
-	"path/filepath"
-
 	"github.com/fsnotify/fsnotify"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-
-	"github.com/joeyCheek888/go-std.git/global"
-	_ "github.com/joeyCheek888/go-std.git/packfile"
+	"os"
 )
 
 // Viper //
 // 优先级: 命令行 > 环境变量 > 默认值
 
-func Viper(path ...string) *viper.Viper {
+func Viper(configMapping any, path ...string) *viper.Viper {
 	var config string
 
 	if len(path) == 0 {
@@ -63,16 +58,13 @@ func Viper(path ...string) *viper.Viper {
 
 	v.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("config file changed:", e.Name)
-		if err = v.Unmarshal(&global.GVA_CONFIG); err != nil {
+		if err = v.Unmarshal(&configMapping); err != nil {
 			fmt.Println(err)
 		}
 	})
-	if err = v.Unmarshal(&global.GVA_CONFIG); err != nil {
+	if err = v.Unmarshal(&configMapping); err != nil {
 		panic(err)
 	}
-
-	// root 适配性 根据root位置去找到对应迁移位置,保证root路径有效
-	global.GVA_CONFIG.AutoCode.Root, _ = filepath.Abs("..")
 
 	return v
 }

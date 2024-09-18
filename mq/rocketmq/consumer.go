@@ -6,7 +6,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/apache/rocketmq-client-go/v2/rlog"
-	"github.com/joeyCheek888/go-std.git/log"
+	"github.com/joeyCheek888/go-std/log"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
