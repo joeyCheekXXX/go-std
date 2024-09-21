@@ -3,57 +3,53 @@ package httpx
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/joeyCheek888/go-std/httpx/websocket"
+	"github.com/joeyCheek888/go-std/httpx/websocket/client"
 	"github.com/joeyCheek888/go-std/log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
-var _config *Config
-
 type Server struct {
+	conf *Config
 	http.Server
-	Router          *gin.Engine
-	enableWebsocket bool
+	Router *gin.Engine
 }
 
 func NewServer(conf *Config) *Server {
 
-	_config = conf
+	conf.Check()
 
 	s := &Server{
+		conf:   conf,
 		Server: http.Server{},
 		Router: newRouter(),
 	}
-	gin.SetMode(_config.Mode)
 
 	return s
 }
 
-// EnableWs 开启websocket
-func (s *Server) EnableWs(path string, handler func(context *gin.Context)) {
-	s.enableWebsocket = true
+// swag init -g ./controller.go -d ./internal/controller/customer_support/business --parseDependency -o ./docs/customer_support/business
+
+// EnableWebsocket 开启websocket
+func (s *Server) EnableWebsocket(path string, handler func(context *gin.Context)) {
+	log.Logger.Info("启用websocket", zap.String("path", path))
 	s.Router.GET(path, handler)
+
+	go client.Manager.Start()
 }
 
 func (s *Server) Start() {
 
-	if _config.Addr == "" {
-		_config.Addr = "0.0.0.0"
-	}
-
-	address := fmt.Sprintf("%s:%s", _config.Addr, _config.Port)
+	address := fmt.Sprintf("%s:%s", s.conf.Addr, s.conf.Port)
 
 	log.Logger.Info("启动HTTP服务", log.String("地址", address))
 
 	s.Server.Addr = address
 	s.Server.Handler = s.Router
 
-	if s.enableWebsocket {
-		go websocket.Manager.Start()
-	}
-
 	err := s.Server.ListenAndServe()
 	if err != nil {
+		log.Logger.Error("启动HTTP服务失败", log.Error(err))
 		return
 	}
 

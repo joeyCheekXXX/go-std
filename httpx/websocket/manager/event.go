@@ -1,15 +1,19 @@
-package websocket
+package manager
+
+import (
+	"github.com/joeyCheek888/go-std/httpx/websocket/handler"
+)
 
 // EventRegister 用户建立连接事件
 func (manager *manager) EventRegister(client *Client) {
 	manager.AddClients(client)
-	registerCallback(client)
+	handler.RegisterCallback(client)
 }
 
 // EventUnregister 用户断开连接
 func (manager *manager) EventUnregister(client *Client) {
 	manager.DelClients(client)
-	closeConnCallback(client)
+	handler.CloseConnCallback(client)
 	// 关闭 chan
 	client.close()
 }

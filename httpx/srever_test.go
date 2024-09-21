@@ -9,9 +9,6 @@ func TestServer(t *testing.T) {
 		Port:             "",
 		RouterPrefix:     "",
 		Mode:             "",
-		LimitCountIP:     0,
-		LimitTimeIP:      0,
-		UseMultipoint:    false,
 		EnableSwaggerDoc: false,
 	}
 
