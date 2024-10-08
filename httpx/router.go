@@ -6,6 +6,8 @@ import (
 
 func newRouter() *gin.Engine {
 
+	gin.SetMode(gin.ReleaseMode)
+
 	Router := gin.New()
 
 	Router.Use(gin.Recovery())
