@@ -1,6 +1,8 @@
 package httpx
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func newRouter() *gin.Engine {
 

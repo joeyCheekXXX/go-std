@@ -1,4 +1,4 @@
-package validate_trans
+package validator
 
 import (
 	"fmt"
