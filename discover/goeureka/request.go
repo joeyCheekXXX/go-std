@@ -1,10 +1,5 @@
 package goeureka
 
-//File  : request.go
-//Author: Simon
-//Describe: Defines all request for client request
-//Date  : 2020-12-03 11:12:23
-
 import (
 	"crypto/tls"
 	"io/ioutil"
@@ -22,11 +17,11 @@ func executeQuery(requestAction RequestAction) ([]byte, error) {
 	var DefaultTransport http.RoundTripper = &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		Dial: func(netw, addr string) (net.Conn, error) {
-			conn, err := net.DialTimeout(netw, addr, time.Second*10) //设置建立连接超时
+			conn, err := net.DialTimeout(netw, addr, time.Second*10) // 设置建立连接超时
 			if err != nil {
 				return nil, err
 			}
-			conn.SetDeadline(time.Now().Add(time.Second * 10)) //设置发送接受数据超时
+			conn.SetDeadline(time.Now().Add(time.Second * 10)) // 设置发送接受数据超时
 			return conn, nil
 		},
 		ResponseHeaderTimeout: time.Second * 10,
@@ -62,9 +57,7 @@ func isDoHttpRequest(requestAction RequestAction) bool {
 		return false
 	} else {
 		return true
-		defer resp.Body.Close()
 	}
-	return false
 }
 
 // newHttpRequest build request for eureka
@@ -73,7 +66,6 @@ func newHttpRequest(requestAction RequestAction) *http.Request {
 		err     error
 		request *http.Request
 	)
-	//log.Printf("DoHttpRequest URL(%v)",requestAction.Url)
 	// load body and template for request
 	if requestAction.Body != "" { // add body
 		reader := strings.NewReader(requestAction.Body)

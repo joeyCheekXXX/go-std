@@ -1,10 +1,5 @@
 package goeureka
 
-//File  : models.go
-//Author: Simon
-//Describe: Defines all structs for eureka
-//Date  : 2020-12-03
-
 /**
   Defines all structs for eureka
 
@@ -93,7 +88,7 @@ type ApplicationsRootResponse struct {
 
 type ApplicationsResponse struct {
 	Version      string        `json:"versions__delta"`
-	AppsHashcode string        `json:"versions__delta"`
+	AppsHashcode string        `json:"apps_hashcode"`
 	Applications []Application `json:"application"`
 }
 
