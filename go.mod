@@ -1,6 +1,6 @@
 module github.com/joeyCheek888/go-std
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.2
@@ -13,7 +13,6 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/goccy/go-json v0.10.3
 	github.com/gorilla/websocket v1.5.3
-	github.com/matryer/is v1.4.1
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.6.1
