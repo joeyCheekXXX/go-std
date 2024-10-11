@@ -1,7 +1,7 @@
 package oracle
 
 import (
-	"github.com/joeyCheek888/go-std/db/config"
+	"github.com/joeyCheekXXX/go-std/db/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

@@ -3,8 +3,8 @@ package httpx
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/joeyCheek888/go-std/httpx/websocket"
-	"github.com/joeyCheek888/go-std/log"
+	"github.com/joeyCheekXXX/go-std/httpx/websocket"
+	"github.com/joeyCheekXXX/go-std/log"
 	"net/http"
 )
 

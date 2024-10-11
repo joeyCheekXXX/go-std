@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/joeyCheek888/go-std/log"
+	"github.com/joeyCheekXXX/go-std/log"
 	"testing"
 )
 

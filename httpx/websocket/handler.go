@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/joeyCheek888/go-std/log"
+	"github.com/joeyCheekXXX/go-std/log"
 	"net/http"
 	"time"
 )

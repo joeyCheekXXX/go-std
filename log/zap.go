@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/joeyCheek888/go-std/directory"
+	"github.com/joeyCheekXXX/go-std/directory"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
