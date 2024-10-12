@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"net/http"
 	"sync"
 	"time"
 )
@@ -9,67 +10,90 @@ const (
 	heartbeatTimeout = 3 * 60 // 用户心跳超时时间
 )
 
-var (
-	Manager *manager
-)
-
-// Event
-// @Description: manager
-type Event struct {
-	Register   chan *Member // 连接连接处理
-	Unregister chan *Member // 断开连接处理程序
-	Broadcast  chan []byte  // 广播 向全部成员发送数据
-}
-
-// 连接管理
-type manager struct {
+// Manager 连接管理
+type Manager struct {
+	Lock        sync.RWMutex      // 读写锁
 	Members     map[*Member]bool  // 全部的连接
-	MembersLock sync.RWMutex      // 读写锁
-	Users       map[int64]*Member // 登录的用户
-	UserLock    sync.RWMutex      // 读写锁
-	Event
+	MemberIdRef map[int64]*Member // 连接的ID索引
+	Event       *Event            // 事件管理
 }
 
-// init 引入该包后自动创建连接管理
-func init() {
-	Manager = &manager{
+func NewManager() *Manager {
+	return &Manager{
 		Members:     make(map[*Member]bool),
-		MembersLock: sync.RWMutex{},
-		Users:       make(map[int64]*Member),
-		UserLock:    sync.RWMutex{},
-		Event: Event{
-			Register:   make(chan *Member, 1000),
-			Unregister: make(chan *Member, 1000),
-			Broadcast:  make(chan []byte, 1000),
-		},
+		MemberIdRef: make(map[int64]*Member),
+		Lock:        sync.RWMutex{},
+		Event:       NewEvent(),
 	}
-	return
 }
 
-// InClient 判断连接是否存在
-func (manager *manager) InClient(client *Member) (ok bool) {
-	manager.MembersLock.RLock()
-	defer manager.MembersLock.RUnlock()
-
-	// 连接存在，在添加
-	_, ok = manager.Members[client]
-	return
+// WithRegisterConnFunc
+//
+//	@Description: 设置注册连接回调函数
+//	@receiver manager
+//	@param registerConnFunc
+func (manager *Manager) WithRegisterConnFunc(registerConnFunc func(member *Member)) {
+	manager.Event.registerConnFunc = registerConnFunc
 }
 
-// GetClients 获取所有客户端
-func (manager *manager) GetClients() (clients map[*Member]bool) {
+// WithCloseConnFunc
+//
+//	@Description: 设置关闭连接回调函数
+//	@receiver manager
+//	@param registerConnFunc
+func (manager *Manager) WithCloseConnFunc(closeConnFunc func(member *Member)) {
+	manager.Event.closeConnFunc = closeConnFunc
+}
+
+// WithProcessMessageFunc
+//
+//	@Description: 设置消息处理回调函数
+//	@receiver manager
+//	@param registerConnFunc
+func (manager *Manager) WithProcessMessageFunc(processMessageFunc func(member *Member, message []byte)) {
+	manager.Event.processMessageFunc = processMessageFunc
+}
+
+// WithCheckTokenFunc
+//
+//	@Description: 设置检查token回调函数
+//	@receiver manager
+//	@param checkTokenFunc
+func (manager *Manager) WithCheckTokenFunc(checkTokenFunc func(token string) bool) {
+	manager.Event.CheckTokenFunc = checkTokenFunc
+}
+
+// WithCheckOriginFunc
+//
+//	@Description: 设置检查origin回调函数 用于检查请求的合法性，是否跨域伪造等
+//	@receiver manager
+//	@param checkOriginFunc
+func (manager *Manager) WithCheckOriginFunc(checkOriginFunc func(r *http.Request) bool) {
+	manager.Event.CheckOriginFunc = checkOriginFunc
+}
+
+// GetAllMember
+//
+//	@Description: 获取所有客户端
+//	@receiver manager
+//	@return clients
+func (manager *Manager) GetAllMember() (clients map[*Member]bool) {
 	clients = make(map[*Member]bool)
-	manager.ClientsRange(func(client *Member, value bool) (result bool) {
+	manager.MembersRange(func(client *Member, value bool) (result bool) {
 		clients[client] = value
 		return true
 	})
 	return
 }
 
-// ClientsRange 遍历
-func (manager *manager) ClientsRange(f func(client *Member, value bool) (result bool)) {
-	manager.MembersLock.RLock()
-	defer manager.MembersLock.RUnlock()
+// MembersRange
+//
+//	@Description: 遍历客户端
+//	@receiver manager
+//	@param f
+func (manager *Manager) MembersRange(f func(client *Member, value bool) (result bool)) {
+	manager.Lock.RLock()
+	defer manager.Lock.RUnlock()
 	for key, value := range manager.Members {
 		result := f(key, value)
 		if result == false {
@@ -79,127 +103,150 @@ func (manager *manager) ClientsRange(f func(client *Member, value bool) (result 
 	return
 }
 
-// GetClientsLen GetClientsLen
-func (manager *manager) GetClientsLen() (clientsLen int) {
+// GetAllMembersLen
+//
+//	@Description: 获取客户端数量
+//	@receiver manager
+//	@return clientsLen
+func (manager *Manager) GetAllMembersLen() (clientsLen int) {
 	clientsLen = len(manager.Members)
 	return
 }
 
-// AddClients 添加客户端
-func (manager *manager) AddClients(client *Member) {
-	manager.MembersLock.Lock()
-	defer manager.MembersLock.Unlock()
-	manager.Members[client] = true
-	manager.Users[client.ID] = client
+// AddMember
+//
+//	@Description: 添加客户端
+//	@receiver manager
+//	@param member
+func (manager *Manager) AddMember(member *Member) {
+	manager.Lock.Lock()
+	defer manager.Lock.Unlock()
+
+	manager.Members[member] = true
+	manager.MemberIdRef[member.ID] = member
 }
 
-// DelClients 删除客户端
-func (manager *manager) DelClients(client *Member) {
-	manager.MembersLock.Lock()
-	defer manager.MembersLock.Unlock()
-	if _, ok := manager.Members[client]; ok {
-		delete(manager.Members, client)
+// DelMember
+//
+//	@Description:  删除客户端
+//	@receiver manager
+//	@param member
+func (manager *Manager) DelMember(member *Member) {
+	manager.Lock.Lock()
+	defer manager.Lock.Unlock()
+
+	if _, ok := manager.Members[member]; ok {
+		delete(manager.Members, member)
 	}
 
-	if _, ok := manager.Users[client.ID]; ok {
-		delete(manager.Users, client.ID)
+	if _, ok := manager.MemberIdRef[member.ID]; ok {
+		delete(manager.MemberIdRef, member.ID)
 	}
 }
 
-// GetUserClient 获取用户的连接
-func (manager *manager) GetUserClient(ID int64) (client *Member) {
-	manager.UserLock.RLock()
-	defer manager.UserLock.RUnlock()
-	if value, ok := manager.Users[ID]; ok {
+// GetMemberByID
+//
+//	@Description: 获取连接 根据ID
+//	@receiver manager
+//	@param ID
+//	@return client
+func (manager *Manager) GetMemberByID(ID int64) (client *Member) {
+	manager.Lock.RLock()
+	defer manager.Lock.RUnlock()
+	if value, ok := manager.MemberIdRef[ID]; ok {
 		client = value
 	}
 	return
 }
 
-// GetUsersLen GetClientsLen
-func (manager *manager) GetUsersLen() (userLen int) {
-	userLen = len(manager.Users)
+// GetMembersLen
+//
+//	@Description: 获取所有连接数量
+//	@receiver manager
+//	@return userLen
+func (manager *Manager) GetMembersLen() (userLen int) {
+	userLen = len(manager.MemberIdRef)
 	return
 }
 
-// GetUserClients 获取用户的key
-func (manager *manager) GetUserClients() (clients []*Member) {
-	clients = make([]*Member, 0)
-	manager.UserLock.RLock()
-	defer manager.UserLock.RUnlock()
-	for _, v := range manager.Users {
-		clients = append(clients, v)
-	}
-	return
-}
-
-// sendAll 向全部成员发送数据
-func (manager *manager) sendAll(message []byte) {
-	clients := manager.GetUserClients()
-	for _, conn := range clients {
+// sendAll
+//
+//	@Description: 向全部成员发送数据
+//	@receiver manager
+//	@param message
+func (manager *Manager) sendAll(message []byte) {
+	for conn, _ := range manager.GetAllMember() {
 		conn.SendMsg(message)
 	}
 }
 
-// Start 事件管道处理程序
-func (manager *manager) Start() {
+// Start
+//
+//	@Description: 事件管道处理程序
+//	@receiver manager
+func (manager *Manager) Start() {
 	for {
 		select {
-		case conn := <-manager.Register:
+		case member := <-manager.Event.RegisterChan:
 			// 建立连接事件
-			manager.EventRegister(conn)
-		case conn := <-manager.Unregister:
+			manager.Event.registerConnFunc(member)
+			manager.AddMember(member)
+
+			go func() {
+				member.Read(manager.Event)
+				member.Write(manager.Event)
+			}()
+
+		case member := <-manager.Event.UnregisterChan:
 			// 断开连接事件
-			manager.EventUnregister(conn)
-		case message := <-manager.Broadcast:
+			manager.DelMember(member)
+			manager.Event.closeConnFunc(member)
+
+			// 关闭 member chan
+			member.close()
+
+		case message := <-manager.Event.BroadcastChan:
 			// 广播事件
-			clients := manager.GetClients()
-			for conn := range clients {
-				select {
-				case conn.Send <- message:
-				default:
-					close(conn.Send)
-				}
-			}
+			manager.sendAll(message)
 		}
 	}
 }
 
-// GetManagerInfo 获取管理者信息
-func GetManagerInfo(isDebug string) (managerInfo map[string]interface{}) {
+// GetManagerInfo
+//
+//	@Description: 获取管理者信息
+//	@receiver manager
+//	@param isDebug
+//	@return managerInfo
+func (manager *Manager) GetManagerInfo(isDebug string) (managerInfo map[string]interface{}) {
 	managerInfo = make(map[string]interface{})
-	managerInfo["clientsLen"] = Manager.GetClientsLen()        // 客户端连接数
-	managerInfo["usersLen"] = Manager.GetUsersLen()            // 登录用户数
-	managerInfo["chanRegisterLen"] = len(Manager.Register)     // 未处理连接事件数
-	managerInfo["chanUnregisterLen"] = len(Manager.Unregister) // 未处理退出登录事件数
-	managerInfo["chanBroadcastLen"] = len(Manager.Broadcast)   // 未处理广播事件数
+	managerInfo["clientsLen"] = manager.GetAllMembersLen()               // 客户端连接数
+	managerInfo["usersLen"] = manager.GetMembersLen()                    // 登录用户数
+	managerInfo["chanRegisterLen"] = len(manager.Event.RegisterChan)     // 未处理连接事件数
+	managerInfo["chanUnregisterLen"] = len(manager.Event.UnregisterChan) // 未处理退出登录事件数
+	managerInfo["chanBroadcastLen"] = len(manager.Event.BroadcastChan)   // 未处理广播事件数
 	if isDebug == "true" {
 		addrList := make([]string, 0)
-		Manager.ClientsRange(func(client *Member, value bool) (result bool) {
+		manager.MembersRange(func(client *Member, value bool) (result bool) {
 			addrList = append(addrList, client.Addr)
 			return true
 		})
-		// users := Manager.GetUserKeys()
 		managerInfo["clients"] = addrList // 客户端列表
-		// managerInfo["users"] = users      // 登录用户列表
 	}
 	return
 }
 
-// GetUserClient 获取用户所在的连接
-func GetUserClient(ID int64) (client *Member) {
-	client = Manager.GetUserClient(ID)
-	return
-}
-
-// ClearTimeoutConnections 定时清理超时连接
-func ClearTimeoutConnections() {
-	if Manager == nil {
+// ClearTimeoutConnections
+//
+//	@Description: 定时清理超时连接
+//	@receiver manager
+func (manager *Manager) ClearTimeoutConnections() {
+	if manager == nil {
 		return
 	}
 	currentTime := time.Now().Unix()
 
-	clients := Manager.GetClients()
+	clients := manager.GetAllMember()
 	for client := range clients {
 		if client.IsHeartbeatTimeout(currentTime, heartbeatTimeout) {
 			_ = client.close

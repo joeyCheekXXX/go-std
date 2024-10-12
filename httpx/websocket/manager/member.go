@@ -3,10 +3,9 @@ package manager
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/joeyCheek888/go-std/httpx/websocket/handler"
-	"github.com/joeyCheek888/go-std/log"
 	"github.com/joeyCheek888/go-std/snowflake"
 	"runtime/debug"
+	"time"
 )
 
 // Member 用户连接
@@ -21,9 +20,11 @@ type Member struct {
 }
 
 // NewMember 初始化
-func NewMember(addr string, token string, socket *websocket.Conn, firstTime int64) *Member {
+func NewMember(socket *websocket.Conn, token string) *Member {
+	firstTime := time.Now().Unix()
+
 	return &Member{
-		Addr:          addr,
+		Addr:          socket.RemoteAddr().String(),
 		Socket:        socket,
 		Send:          make(chan []byte, 100),
 		ID:            snowflake.GenerateID(),
@@ -34,7 +35,7 @@ func NewMember(addr string, token string, socket *websocket.Conn, firstTime int6
 }
 
 // 读取客户端数据
-func (c *Member) Read() {
+func (c *Member) Read(event *Event) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("client socket read recover ", string(debug.Stack()), r)
@@ -49,21 +50,19 @@ func (c *Member) Read() {
 			return
 		}
 
-		// 处理程序
-		// fmt.Println("读取客户端数据 处理:", string(message))
-		handler.DefaultProcessData(c, message)
+		event.processMessageFunc(c, message)
 	}
 }
 
 // 向客户端写数据
-func (c *Member) Write() {
+func (c *Member) Write(event *Event) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("client socket write recover", string(debug.Stack()), r)
 		}
 	}()
 	defer func() {
-		Manager.Unregister <- c
+		event.UnregisterChan <- c
 		_ = c.Socket.Close()
 	}()
 	for {
@@ -93,11 +92,7 @@ func (c *Member) SendMsg(msg []byte) {
 
 // close 关闭客户端连接
 func (c *Member) close() {
-	err := c.Socket.Close()
-	if err != nil {
-		log.Logger.Error("websocket member socket close err", log.Error(err))
-		return
-	}
+	c.Socket.Close()
 }
 
 // Heartbeat 用户心跳

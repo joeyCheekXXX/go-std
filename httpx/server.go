@@ -3,7 +3,8 @@ package httpx
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/joeyCheek888/go-std/httpx/websocket/client"
+	"github.com/joeyCheek888/go-std/httpx/websocket"
+	websockerManager "github.com/joeyCheek888/go-std/httpx/websocket/manager"
 	"github.com/joeyCheek888/go-std/log"
 	"go.uber.org/zap"
 	"net/http"
@@ -12,7 +13,8 @@ import (
 type Server struct {
 	conf *Config
 	http.Server
-	Router *gin.Engine
+	Router           *gin.Engine
+	websocketManager *websockerManager.Manager
 }
 
 func NewServer(conf *Config) *Server {
@@ -20,9 +22,10 @@ func NewServer(conf *Config) *Server {
 	conf.Check()
 
 	s := &Server{
-		conf:   conf,
-		Server: http.Server{},
-		Router: newRouter(),
+		conf:             conf,
+		Server:           http.Server{},
+		Router:           newRouter(),
+		websocketManager: nil,
 	}
 
 	return s
@@ -31,11 +34,23 @@ func NewServer(conf *Config) *Server {
 // swag init -g ./controller.go -d ./internal/controller/customer_support/business --parseDependency -o ./docs/customer_support/business
 
 // EnableWebsocket 开启websocket
-func (s *Server) EnableWebsocket(path string, handler func(context *gin.Context)) {
+func (s *Server) EnableWebsocket(path string) {
 	log.Logger.Info("启用websocket", zap.String("path", path))
-	s.Router.GET(path, handler)
 
-	go client.Manager.Start()
+	s.websocketManager = websockerManager.NewManager()
+	go s.websocketManager.Start()
+
+	websocket.Upgrade(path, s.websocketManager, s.Router)
+}
+
+func (s *Server) WebsocketManger() *websockerManager.Manager {
+
+	if s.websocketManager == nil {
+		log.Logger.Error("websocket not initialized")
+		panic("websocket not initialized!")
+	}
+
+	return s.websocketManager
 }
 
 func (s *Server) Start() {

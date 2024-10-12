@@ -1,10 +1,13 @@
-package httpx
+package http
 
-import "testing"
+import (
+	"github.com/joeyCheek888/go-std/httpx"
+	"testing"
+)
 
 func TestServer(t *testing.T) {
 
-	conf := &Config{
+	conf := &httpx.Config{
 		Addr:             "",
 		Port:             "",
 		RouterPrefix:     "",
@@ -12,7 +15,7 @@ func TestServer(t *testing.T) {
 		EnableSwaggerDoc: false,
 	}
 
-	s := NewServer(conf)
+	s := httpx.NewServer(conf)
 
 	s.Start()
 }
